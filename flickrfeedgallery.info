@@ -1,0 +1,3 @@
+name	=	Flickr Feed Gallery
+description	=	This is a simple gallery which pulls images from the Flickr API.
+core	=	7.x
