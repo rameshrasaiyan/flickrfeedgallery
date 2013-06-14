@@ -3,12 +3,11 @@
 /*
 * Implements hook_permission();
 */
-
 function flickrfeedgallery_permission(){
 	return array(
 		'administer flickrfeedgallery module'	=> array(
-			'title'			=>	t('Administer flickrfeedgallery module'),
-			'description'	=>	t('Perform administration tasks for flickrfeedgallery module.'),
+			'title'			   =>	t('Administer flickrfeedgallery module'),
+			'description'	 =>	t('Perform administration tasks for flickrfeedgallery module.'),
 			),
 		);
 }
@@ -18,26 +17,93 @@ function flickrfeedgallery_permission(){
  */
 function flickrfeedgallery_menu() {
   $items['admin/config/services/flickrfeedgallery'] = array(
-    'title' => 'Flickr Feed Gallery',
-    'description' => 'Configure flickr feed gallery feed URL to get the images.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('flickrfeedgallery_admin_settings_form'),
-    'access arguments' => array('administer flickr feed gallery'),
-    'type' => MENU_NORMAL_ITEM,
-    'file' => 'flickrfeedgallery.admin.inc',
+    'title'             => 'Flickr Feed Gallery',
+    'description'       => 'Configure flickr feed gallery feed URL to get the images.',
+    'page callback'     => 'drupal_get_form',
+    'page arguments'    => array('flickrfeedgallery_admin_settings_form'),
+    'access arguments'  => array('administer flickr feed gallery'),
+    'type'              => MENU_NORMAL_ITEM,
+    'file'              => 'flickrfeedgallery.admin.inc',
  );
-
-  return $items;
+return $items;
 }
 
-function flickrfeedgallery_node_view($node, $view_mode, $langcode) {
 
-	$id	= trim($form_state['values']['flickrfeedgallery_id']);
-
-  $node->content['flickrfeedgallery_field'] = array(
-  	'#type'	=> 'markup',
-    '#markup' => '<p>This is a Flickr ID: '.$id.'</p>',
-    '#weight' => -10,
+/**
+ * Implements hook_block_info().
+ */
+function flickrfeedgallery_block_info() {
+  $blocks['flickrfeedgallery'] = array(
+    'info'      => t('Flickr Feed Gallery'),
+    'cache'     => DRUPAL_CACHE_PER_ROLE,
   );
-  krumo($node);
+return $blocks;
+}
+
+/**
+ * To get the Flickr Contents.
+ */
+function flickr_feed_contents(){
+  $id = variable_get('flickrfeedgallery_id', '22828405@N04');
+  $url = "http://api.flickr.com/services/feeds/photos_public.gne?id=".$id."&lang=en-us&format=xml";
+  /*
+  $aContext = array(
+      'http' => array(
+          'proxy' => 'proxyanbcge.nbc.com:80', // This needs to be the server and the port of the NTLM Authentication Proxy Server.
+          'request_fulluri' => True,
+          ),
+      );
+  $cxContext = stream_context_create($aContext);
+  $content = file_get_contents($url, False, $cxContext);
+  */
+  drupal_add_css(drupal_get_path('module', 'flickrfeedgallery') . '/css/flickr.css');
+
+  $content = file_get_contents($url);
+
+  $rss = simplexml_load_string($content);
+    if($rss)
+    {
+      $attributes = array(
+        'id' => 'flickr_wrapper',
+        'class' => 'flickr_wrapper',
+      );
+      $counter = 0;
+      $items = $rss->entry;
+      foreach($items as $item)
+      {
+        foreach($item->link as $link) {
+          if ($link['rel'] == "enclosure"){
+            $image = substr($link['href'] , 0 , strrpos($link['href'], '_', -1)) . '_s.jpg';
+          }
+        } 
+        $title = $item->title;
+        $href_link = $item->link['href'];
+        $content = $item->content;
+
+        if($counter <= 15){
+          $image_source = '<img src="'. $image .'">';
+          $block[] = array(
+            'data' => l($image_source, $href_link, array('html' => TRUE, 'attributes' => array('target'  => '_blank'))),
+            'class' => array('flickr_item'),
+            );
+        }
+        $counter++;
+      }
+
+      return theme('item_list', array('items' => $block, 'attributes' => $attributes));
+  }
+}
+
+/*
+* Implements hook__block_view().
+*/
+function flickrfeedgallery_block_view($delta = '') {
+  $block = array();
+    switch($delta){
+    case 'flickrfeedgallery': 
+      $block['subject'] = t('My Flickr Photos');
+      $block['content'] = flickr_feed_contents();
+    break;
+  }
+  return $block;
 }

@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Administrative page callbacks for the googleanalytics module.
+ * Administrative page callbacks for the flickrfeedgallery module.
  */
 
 /**
