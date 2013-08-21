@@ -73,8 +73,13 @@ function flickr_feed_contents(){
       {
         foreach($item->link as $link) {
           if ($link['rel'] == "enclosure"){
-            $image = substr($link['href'] , 0 , strrpos($link['href'], '_', -1)) . '_s.jpg';
+            if (strpos($link['href'], 'www.flickr.com')===false){
+              $image = substr($link['href'] , 0 , strrpos($link['href'], '_', -1)) . '_s.jpg';
+            }
           }
+        }
+        if (empty($image)){
+          continue;
         } 
         $title = $item->title;
         $href_link = $item->link['href'];
