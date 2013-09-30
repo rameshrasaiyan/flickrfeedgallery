@@ -86,7 +86,13 @@ function flickr_feed_contents(){
         $content = $item->content;
 
         if($counter <= 15){
-          $image_source = '<img src="'. $image .'">';
+          $img_source = array(
+            'path' => $image,
+            'alt' => t('Flickr Thumpnail Image'),
+            'width' => '44px',
+            'height' => '44px',
+          );
+          $image_source = theme('image', $img_source);
           $block[] = array(
             'data' => l($image_source, $href_link, array('html' => TRUE, 'attributes' => array('target'  => '_blank'))),
             'class' => array('flickr_item'),
@@ -94,12 +100,11 @@ function flickr_feed_contents(){
         }
         $counter++;
       }
-
       return theme('item_list', array('items' => $block, 'attributes' => $attributes));
   }
 }
 
-/*
+/**
 * Implements hook__block_view().
 */
 function flickrfeedgallery_block_view($delta = '') {
