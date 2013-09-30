@@ -17,8 +17,8 @@ function flickrfeedgallery_permission(){
  */
 function flickrfeedgallery_menu() {
   $items['admin/config/services/flickrfeedgallery'] = array(
-    'title'             => 'Flickr Feed Gallery',
-    'description'       => 'Configure flickr feed gallery feed URL to get the images.',
+    'title'             => t('Flickr Feed Gallery'),
+    'description'       => t('Configure flickr feed gallery feed URL to get the images.'),
     'page callback'     => 'drupal_get_form',
     'page arguments'    => array('flickrfeedgallery_admin_settings_form'),
     'access arguments'  => array('administer flickr feed gallery'),
